@@ -6,7 +6,7 @@ import {
   Droplets, Sun, Moon, Users, Landmark, Settings, ChevronDown 
 } from 'lucide-react';
 
-import logoMara from '../../assets/logo-maraplus.png';
+import logoMara from '../../assets/Isotipo2.png';
 
 interface SidebarProps {
   onClose?: () => void;
@@ -54,30 +54,43 @@ export const Sidebar: React.FC<SidebarProps> = ({ onClose, setActiveTab }) => {
     if (onClose) onClose(); 
   };
 
-  return (
+return (
     <aside className="w-64 h-screen bg-theme-sidebar border-r border-theme-border flex flex-col relative shadow-2xl overflow-hidden transition-colors duration-300">
       
       {/* Luz ambiental */}
       <div className="absolute -top-24 -left-24 w-48 h-48 bg-theme-accent/10 blur-[100px] pointer-events-none hidden dark:block" />
 
-      {/* Header / Logo */}
-      <div className="p-6 pb-6 relative">
-        <div className="flex flex-col items-center cursor-pointer" onClick={() => handleNavigation('dashboard', '/dashboard')}>
-          <img 
-            src={logoMara} 
-            alt="Logo" 
-            className="w-28 object-contain mb-3 dark:brightness-110 brightness-95 transition-all" 
-          />
-          <div className="text-center">
-            <h1 className="text-lg font-black tracking-tighter text-theme-text uppercase">
+      {/* 🚀 Header / Logo y Título Alineados */}
+      <div className="p-6 relative">
+        <div 
+          className="flex items-center gap-3 cursor-pointer group" 
+          onClick={() => handleNavigation('dashboard', '/dashboard')}
+        >
+          {/* Logo más pequeño para la alineación horizontal */}
+          <div className="relative">
+            <img 
+              src={logoMara} 
+              alt="Logo" 
+              className="w-10 h-10 object-contain dark:brightness-110 brightness-95 transition-transform duration-500 group-hover:scale-110" 
+            />
+            {/* Efecto de brillo detrás del logo */}
+            <div className="absolute inset-0 bg-theme-accent/20 blur-xl rounded-full opacity-0 group-hover:opacity-100 transition-opacity" />
+          </div>
+
+          <div className="flex flex-col justify-center">
+            <h1 className="text-xl font-black tracking-tighter text-theme-text uppercase leading-none">
               Pharos<span className="text-blue-500 font-light italic">App</span>
             </h1>
+            <span className="text-[7px] font-bold text-theme-sub tracking-[0.3em] uppercase opacity-40 group-hover:opacity-100 transition-opacity">
+              Core System
+            </span>
           </div>
         </div>
       </div>
 
       {/* Navegación Principal */}
       <nav className="flex-1 px-3 space-y-0.5 overflow-y-auto custom-scrollbar">
+        {/* ... resto del código del nav ... */}
         <p className="px-3 text-[9px] font-bold text-theme-sub uppercase tracking-[0.2em] mb-2 opacity-50">Menú Principal</p>
         
         {menuItems.map((item) => {
@@ -99,7 +112,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onClose, setActiveTab }) => {
           );
         })}
 
-        {/* Sección de Configuración Desplegable */}
+        {/* Sección de Configuración */}
         <div className="pt-4 mt-4 border-t border-theme-border/50">
           <button
             onClick={() => setIsConfigOpen(!isConfigOpen)}
@@ -115,7 +128,6 @@ export const Sidebar: React.FC<SidebarProps> = ({ onClose, setActiveTab }) => {
             <ChevronDown size={12} className={`transition-transform duration-300 ${isConfigOpen ? 'rotate-180' : ''}`} />
           </button>
 
-          {/* Opciones Desplegables */}
           <div className={`
             overflow-hidden transition-all duration-300 ease-in-out px-2
             ${isConfigOpen ? 'max-h-32 opacity-100 mt-1' : 'max-h-0 opacity-0'}

@@ -17,7 +17,7 @@ export const authService = {
   
   // 1. Obtener todos los usuarios para la tabla
   getUsuarios: async (): Promise<Usuario[]> => {
-    const { data } = await api.get<Usuario[]>('/usuarios');
+    const { data } = await api.get<Usuario[]>('/auth/searchUser');
     return data;
   },
 
@@ -26,15 +26,21 @@ export const authService = {
     const { data } = await api.get<Farmacia[]>('/farmacias');
     return data;
   },
-
-  // 3. Crear el usuario (Afecta las 3 tablas en el backend)
+// 3. Crear el usuario (Corregido: Apunta a /auth/register)
   createUsuario: async (payload: CreateUserDTO): Promise<Usuario> => {
-    const { data } = await api.post<Usuario>('/usuarios', payload);
+    // Forzamos que codusuario sea un número para evitar el error "must be an integer"
+    const formattedPayload = {
+      ...payload,
+      codusuario: Number(payload.codusuario), 
+    };
+
+    // Cambiado de '/usuarios' a '/auth/register' según tu instrucción
+    const { data } = await api.post<Usuario>('/auth/register', formattedPayload);
     return data;
   },
 
-  // 4. Eliminar/Revocar acceso
-  deleteUsuario: async (codusuario: string): Promise<void> => {
+  // ASEGÚRATE DE QUE ESTA FUNCIÓN ESTÉ AQUÍ DENTRO:
+  deleteUsuario: async (codusuario: string | number): Promise<void> => {
     await api.delete(`/usuarios/${codusuario}`);
   }
 };

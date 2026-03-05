@@ -10,6 +10,9 @@ import { TonerPage } from './pages/toners/TonerPage';
 import { NotFoundPage } from './pages/NotFound';
 import { HistorialPage } from './pages/historial/HistorialPage';
 
+// --- NUEVA IMPORTACIÓN DE SONNER ---
+import { Toaster } from 'sonner';
+
 // --- NUEVAS IMPORTACIONES ---
 import { UserPage } from './pages/usuarios/UserPage';
 import { FarmaciaPage } from './pages/farmacias/FarmaciaPage';
@@ -36,6 +39,18 @@ function App() {
 
   return (
     <Router>
+      {/* CONFIGURACIÓN GLOBAL DE SONNER 
+        - theme: detecta automáticamente si es dark o light según tu estado
+        - richColors: para que los éxitos sean verdes y errores rojos
+        - closeButton: permite cerrar las notificaciones manualmente
+      */}
+      <Toaster 
+        theme={theme as 'light' | 'dark'} 
+        richColors 
+        position="top-right"
+        closeButton 
+      />
+
       <Routes>
         <Route path="/login" element={<LoginPage />} />
 

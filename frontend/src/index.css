@@ -71,3 +71,13 @@
 .dark .custom-scrollbar::-webkit-scrollbar-thumb:hover {
   background-color: rgba(59, 130, 246, 0.4); /* Resalta el azul en hover */
 }
+
+/* Reduce un poco el espacio entre alertas expandidas para que sean más compactas */
+[data-sonner-toaster][data-expanded="true"] {
+  gap: 6px !important;
+}
+
+/* Hace que el texto sea un poco más compacto en las alertas amontonadas */
+[data-sonner-toast] {
+  padding: 12px 16px !important;
+}

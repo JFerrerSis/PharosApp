@@ -20,10 +20,10 @@ export interface Usuario {
 // 3. Lo que necesitas para CREAR un usuario (Payload)
 // Aquí enviamos los IDs de las farmacias que seleccionaste en los cuadritos del modal
 export interface CreateUserDTO {
-  codusuario: string;
+  codusuario: number; // Cambiado de string a number
   nombre: string;
   email: string;
   password_hash: string;
-  rol: string;
-  sedes_seleccionadas: string[]; // Ejemplo: ['0301', '1701']
+  rol: 'ADMIN' | 'SOPORTE';
+  sedes_seleccionadas: string[];
 }

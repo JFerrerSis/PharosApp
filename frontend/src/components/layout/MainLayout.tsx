@@ -1,8 +1,9 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Sidebar } from './Sidebar';
 import { getUltimaTasa } from '../../api/tasaService';
 import { RefreshCcw } from 'lucide-react';
 import { type TasaCambio } from '../../types/tasa';
+import { toast } from 'sonner';
 
 interface MainLayoutProps {
   children: React.ReactNode;
@@ -14,6 +15,9 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children, titulo }) => {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [tasa, setTasa] = useState<TasaCambio | null>(null);
   const [loading, setLoading] = useState(true);
+  
+  // Ref para comparar tasas
+  const prevTasaRef = useRef<TasaCambio | null>(null);
 
   const userProfile = {
     username: "jferrer",
@@ -34,23 +38,55 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children, titulo }) => {
     }
   };
 
-  // ✅ Función de recarga extraída para poder usarse en el botón y en el useEffect
-  const handleRefreshTasa = useCallback(async () => {
+  // ✅ Función de recarga mejorada para manejar todos los escenarios
+  const handleRefreshTasa = useCallback(async (isManual = false) => {
     setLoading(true);
     try {
       const data = await getUltimaTasa();
-      setTasa(data || null);
+      
+      // Escenario A: No se obtuvo respuesta del API
+      if (!data) {
+        throw new Error("No se obtuvieron datos");
+      }
+
+      // Comparar con la tasa anterior
+      const hasChanged = 
+        !prevTasaRef.current ||
+        data.dolar !== prevTasaRef.current.dolar ||
+        data.euro !== prevTasaRef.current.euro;
+
+      setTasa(data);
+      prevTasaRef.current = data; // Actualizar el ref
+      
+      if (isManual) {
+        // Escenario B: Éxito y cambio
+        if (hasChanged) {
+          toast.success("Tasas de cambio actualizadas");
+        } 
+        // Escenario C: Éxito pero no hubo cambio en los valores
+        else {
+          toast.info("Tasas al día", {
+            description: "No hay nuevos valores del BCV."
+          });
+        }
+      }
     } catch (error) {
       console.error("Error al recargar la tasa:", error);
-      setTasa(null);
+      
+      // Escenario D: Error técnico o de conexión
+      if (isManual) {
+        toast.error("Error al actualizar", {
+          description: "No se pudo conectar con el servidor."
+        });
+      }
     } finally {
       setLoading(false);
     }
   }, []);
 
   useEffect(() => {
-    handleRefreshTasa();
-    const interval = setInterval(handleRefreshTasa, 30 * 60 * 1000);
+    handleRefreshTasa(false); 
+    const interval = setInterval(() => handleRefreshTasa(false), 30 * 60 * 1000);
     return () => clearInterval(interval);
   }, [handleRefreshTasa]);
 
@@ -125,7 +161,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children, titulo }) => {
 
               {/* 🔄 BOTÓN DE ACTUALIZACIÓN FUNCIONAL */}
               <button 
-                onClick={handleRefreshTasa}
+                onClick={() => handleRefreshTasa(true)}
                 disabled={loading}
                 className="ml-2 p-1.5 rounded-lg hover:bg-theme-main/50 text-theme-sub/30 hover:text-theme-accent transition-all active:scale-90 disabled:opacity-50"
                 title={loading ? "Actualizando..." : `Última actualización: ${tasa?.fecha || 'N/A'}`}

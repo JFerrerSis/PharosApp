@@ -1,76 +1,76 @@
+import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, ShieldAlert } from 'lucide-react';
-import logoMara from '../assets/Logo-maraplus.png'; 
+import logoMara from '../assets/logo-maraplus.png'; 
 import fondoPremium from '../assets/fondo.jpg'; 
 
 export const NotFoundPage: React.FC = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen w-full bg-[#020617] flex flex-col items-center overflow-hidden relative font-sans selection:bg-blue-500/30">
+    <div className="min-h-screen w-full bg-theme-main text-theme-text flex flex-col items-center overflow-hidden relative font-sans selection:bg-theme-accent/20 transition-colors duration-300">
       
-      {/* 🌌 CAPA 0: FONDO CINEMÁTICO */}
-      <div className="absolute inset-0 z-0">
+      {/* 🌌 FONDO: Imagen con superposición de color del tema */}
+      <div className="absolute inset-0 z-0 opacity-30 dark:opacity-10">
         <img 
           src={fondoPremium} 
           alt="Background" 
-          className="w-full h-full object-cover scale-110 blur-[2px] opacity-10" 
+          className="w-full h-full object-cover" 
         />
-        {/* Ajustado: Eliminación de espacios en el gradiente arbitrario */}
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_0%,#020617_80%)]" />
+        {/* Superposición sólida para asegurar contraste */}
+        <div className="absolute inset-0 bg-theme-main mix-blend-multiply" />
       </div>
 
-      {/* 🧩 CAPA 1: MARCA DE AGUA (404) */}
+      {/* 🧩 CAPA 1: MARCA DE AGUA 404 (Minimalista) */}
       <div className="absolute inset-0 z-10 flex items-center justify-center select-none pointer-events-none">
-        {/* Ajustado: text-white/2 */}
-        <h1 className="text-[25vw] font-black text-white/2 leading-none tracking-tighter">
+        <h1 className="text-[30vw] font-black leading-none tracking-tighter text-theme-text opacity-5">
           404
         </h1>
       </div>
 
       {/* 🏷️ CAPA 2: BRANDING SUPERIOR */}
-      <header className="relative z-40 w-full flex justify-center py-12">
-        <div className="group transition-all duration-700 hover:tracking-widest">
-          <img 
-            src={logoMara} 
-            alt="MaraPlus Logo" 
-            className="h-16 md:h-20 object-contain drop-shadow-[0_0_40px_rgba(59,130,246,0.1)] opacity-90 transition-opacity hover:opacity-100" 
-          />
-        </div>
+      <header className="relative z-40 w-full flex justify-center py-10">
+        <img 
+          src={logoMara} 
+          alt="MaraPlus Logo" 
+          className="h-12 md:h-14 object-contain opacity-90 dark:brightness-125" 
+        />
       </header>
 
       {/* 📦 CAPA 3: MÓDULO CENTRAL */}
-      {/* Ajustado: flex-grow -> grow */}
       <main className="relative z-40 grow flex items-center justify-center w-full px-6">
-        {/* Ajustado: max-w-[500px] -> max-w-125 */}
-        <div className="w-full max-w-125 group">
-          <div className="relative bg-slate-900/40 backdrop-blur-3xl border border-white/5 p-8 md:p-12 rounded-[4rem] shadow-[0_30px_100px_-20px_rgba(0,0,0,0.5)] transition-all duration-500 group-hover:border-blue-500/20 group-hover:bg-slate-900/60">
+        <div className="w-full max-w-md">
+          {/* Tarjeta: Fondo sólido con borde sutil en lugar de blur complejo */}
+          <div className="relative bg-theme-main/80 dark:bg-theme-sidebar/80 backdrop-blur-sm border border-theme-border rounded-3xl p-8 md:p-10 shadow-2xl">
             
-            <div className="flex justify-center mb-8">
-              <div className="p-4 rounded-full bg-blue-500/5 border border-blue-500/10 text-blue-500/40 group-hover:text-blue-500 group-hover:scale-110 transition-all duration-500">
-                <ShieldAlert size={32} strokeWidth={1} />
+            {/* Ícono */}
+            <div className="flex justify-center mb-6">
+              <div className="p-3 rounded-full bg-theme-accent/10 text-theme-accent">
+                <ShieldAlert size={36} strokeWidth={1.5} />
               </div>
             </div>
 
-            <div className="text-center space-y-6">
-              <div className="space-y-2">
-                <h2 className="text-blue-500 text-[10px] font-black uppercase tracking-[0.8em] pl-[0.8em]">
-                  Acceso Restringido
+            <div className="text-center space-y-4">
+              <div className="space-y-1">
+                <h2 className="text-theme-accent text-xs font-bold uppercase tracking-[0.3em]">
+                  Error de Sistema
                 </h2>
-                <h3 className="text-white text-3xl font-light tracking-tight">
-                  Página no encontrada
+                <h3 className="text-theme-text text-5xl font-extrabold tracking-tighter">
+                  404
                 </h3>
+                <p className="text-theme-text text-lg font-medium">
+                  Página no encontrada
+                </p>
               </div>
 
-              {/* Ajustado: max-w-[300px] -> max-w-75 */}
-              <p className="text-slate-400/60 text-sm font-light leading-relaxed max-w-75 mx-auto">
-                El protocolo de navegación no pudo resolver la dirección solicitada en el servidor central.
+              <p className="text-theme-sub text-sm leading-relaxed max-w-sm mx-auto">
+                El protocolo de navegación no pudo resolver la dirección solicitada en el servidor central de PharosAPP.
               </p>
 
-              <div className="pt-4">
+              <div className="pt-6">
                 <button 
                   onClick={() => navigate('/dashboard')}
-                  className="w-full py-5 px-8 rounded-full bg-white text-[#020617] font-bold text-xs uppercase tracking-[0.2em] flex items-center justify-center gap-3 transition-all duration-300 hover:bg-blue-600 hover:text-white hover:-translate-y-1 active:scale-95 shadow-xl hover:shadow-blue-600/20"
+                  className="w-full py-3.5 px-6 rounded-full bg-theme-text text-theme-main font-bold text-xs uppercase tracking-[0.2em] flex items-center justify-center gap-3 transition-all duration-200 hover:bg-theme-accent hover:text-white active:scale-95 shadow-md"
                 >
                   <ArrowLeft size={16} />
                   Regresar al Sistema
@@ -82,21 +82,11 @@ export const NotFoundPage: React.FC = () => {
       </main>
 
       {/* 🏷️ CAPA 4: FOOTER ESTRUCTURAL */}
-      <footer className="relative z-40 w-full py-10 flex flex-col items-center gap-4">
-        <div className="flex items-center gap-3 opacity-20 group cursor-default">
-          {/* Ajustado: h-[1px] -> h-px */}
-          <div className="h-px w-8 bg-slate-500 transition-all group-hover:w-16" />
-          <span className="text-[9px] font-bold text-slate-400 tracking-[0.5em] uppercase">
-            MaraPlus // Core System 2026
-          </span>
-          {/* Ajustado: h-[1px] -> h-px */}
-          <div className="h-px w-8 bg-slate-500 transition-all group-hover:w-16" />
-        </div>
+      <footer className="relative z-40 w-full py-8 flex flex-col items-center">
+        <span className="text-[10px] font-bold text-theme-text/50 tracking-[0.2em] uppercase">
+          MARAPLUS GROUP // 2026
+        </span>
       </footer>
-
-      {/* Decoración: Luces de Profundidad (Ajustado: w-200, h-200, /3) */}
-      <div className="absolute top-[-10%] right-[-5%] w-200 h-200 bg-blue-600/3 rounded-full blur-[150px] pointer-events-none" />
-      <div className="absolute bottom-[-10%] left-[-5%] w-200 h-200 bg-emerald-600/3 rounded-full blur-[150px] pointer-events-none" />
     </div>
   );
 };
