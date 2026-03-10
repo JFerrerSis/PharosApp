@@ -259,7 +259,7 @@ export const LoginPage: React.FC = () => {
 
         <footer className="mt-12 text-center border-t border-theme-border pt-6">
           <p className="text-[9px] font-black text-theme-sub uppercase tracking-[0.5em] opacity-50">
-            MARAPLUS GROUP &copy; 2026
+            Jferrer &copy; 2026
           </p>
         </footer>
       </div>

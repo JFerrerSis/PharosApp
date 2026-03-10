@@ -9,7 +9,7 @@ import { PuntosVentaPage } from './pages/puntos/PuntosPage';
 import { TonerPage } from './pages/toners/TonerPage';
 import { NotFoundPage } from './pages/NotFound';
 import { HistorialPage } from './pages/historial/HistorialPage';
-
+import { UsersAttendancePage } from './pages/asistencia/UsersAttendancePage';
 // --- NUEVA IMPORTACIÓN DE SONNER ---
 import { Toaster } from 'sonner';
 
@@ -55,6 +55,13 @@ function App() {
           <Route path="/dashboard" element={
             <MainLayout titulo="Panel de Control">
               <Dashboard />
+            </MainLayout>
+          } />
+
+          {/* Gestión de Asistencia (NUEVA RUTA) */}
+          <Route path="/asistencia" element={
+            <MainLayout titulo="Control de Asistencia Personal">
+              <UsersAttendancePage />
             </MainLayout>
           } />
 

@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { 
   LayoutDashboard, Monitor, Store, 
   History, CreditCard, LogOut, 
-  Droplets, Sun, Moon, Users, Landmark, Settings, ChevronDown, MapPin 
+  Droplets, Sun, Moon, Users, Landmark, Settings, ChevronDown, MapPin,CalendarCheck 
 } from 'lucide-react';
 
 import logoMara from '../../assets/Isotipo2.png';
@@ -58,6 +58,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onClose, setActiveTab }) => {
   const menuItems = [
     { id: 'dashboard', icon: LayoutDashboard, label: 'Dashboard', path: '/dashboard' },
     { id: 'equipos', icon: Monitor, label: 'Equipos', path: '/equipos' },
+    { id: 'asistencia', icon: CalendarCheck, label: 'Asistencia', path: '/asistencia' },
     { id: 'cajas', icon: Store, label: 'Cajas', path: '/cajas' },
     { id: 'toners', icon: Droplets, label: 'Tóners', path: '/toners' },
     { id: 'puntos-venta', icon: CreditCard, label: 'Puntos De Venta', path: '/puntos-venta' },
