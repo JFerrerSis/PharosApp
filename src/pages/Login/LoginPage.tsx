@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { User, Eye, EyeOff, Loader2, Activity, CheckCircle2, Building2 } from 'lucide-react';
+import { User, Eye, EyeOff, Loader2, Activity, CheckCircle2, Building2, ChevronDown } from 'lucide-react';
 import { toast } from 'sonner';
 
 // Importamos el servicio de autenticación ajustado para cookies
@@ -13,7 +13,13 @@ export const LoginPage: React.FC = () => {
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [isDark, setIsDark] = useState(() => document.documentElement.classList.contains('dark'));
+
+  // --- LÓGICA DE PERSISTENCIA AÑADIDA ---
+  const [isDark, setIsDark] = useState(() => {
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme) return savedTheme === 'dark';
+    return document.documentElement.classList.contains('dark');
+  });
 
   // ESTADOS DEL FORMULARIO
   const [username, setUsername] = useState('');
@@ -24,17 +30,27 @@ export const LoginPage: React.FC = () => {
   const [welcomeMessage, setWelcomeMessage] = useState<string | null>(null);
 
   useEffect(() => {
-    setIsDark(document.documentElement.classList.contains('dark'));
+    // Sincronizar la clase del documento con el estado al cargar y cambiar
+    if (isDark) {
+      document.documentElement.classList.add('dark');
+      localStorage.setItem('theme', 'dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+      localStorage.setItem('theme', 'light');
+    }
+
     const observer = new MutationObserver(() => {
-      setIsDark(document.documentElement.classList.contains('dark'));
+      const currentDark = document.documentElement.classList.contains('dark');
+      if (currentDark !== isDark) setIsDark(currentDark);
     });
+
     observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
     return () => observer.disconnect();
-  }, []);
-
+  }, [isDark]); // Escuchamos cambios en isDark
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    // 1. Validación básica de campos vacíos
     if (!username.trim() || !password) {
       toast.error('Campos obligatorios', {
         description: 'Por favor, ingresa tu usuario y contraseña.',
@@ -45,46 +61,57 @@ export const LoginPage: React.FC = () => {
     setIsLoading(true);
 
     try {
-      // 1. Intento de Login (El backend inyectará las cookies at/rt)
+      // 2. Intento de Login enviando la data del SELECT
       const response = await authService.login(
         username.trim(),
         password,
-        idFarmacia,
-        nombreFarmacia
+        idFarmacia, // Viene del estado del select
+        nombreFarmacia // Viene del texto del select (rubio, etc)
       );
 
-      // 2. Validación: Si no hubo error en el catch, el status fue 200 OK.
-      // Ya no buscamos "response.token" porque está en la cookie.
+      // Si llegamos aquí, el backend devolvió 200 OK y las cookies ya están en el navegador
       if (response) {
         setWelcomeMessage(`¡Bienvenido, ${username}!`);
+
+        // Guardamos la sesión activa en localStorage para el AuthGuard
+        localStorage.setItem('pharos_session_active', 'true');
+        localStorage.setItem('pharos_user', JSON.stringify({
+          username: username,
+          sede: nombreFarmacia
+        }));
 
         toast.success('Acceso Autorizado', {
           description: `Sede: ${nombreFarmacia.toUpperCase()} conectada.`,
           duration: 3000,
         });
 
-        // 3. Redirección al Dashboard
         setTimeout(() => {
           setIsLoading(false);
           navigate('/dashboard', { replace: true });
         }, 2200);
-
-      } else {
-        throw new Error('No se pudo validar la sesión.');
       }
 
     } catch (err: any) {
       setIsLoading(false);
-      
-      // Capturamos el error real o el mensaje de "Datos incorrectos"
-      const errorMsg = err.response?.data?.message || 'Usuario, clave o sede incorrectos.';
 
-      toast.error('Error de Autenticación', {
+      // VALIDACIÓN CRUCIAL: 
+      // Si el backend lanza DataDoNotExistsExceptionInfra, llegará aquí como un 404 o 401.
+      const status = err.response?.status;
+      let errorMsg = 'Error interno del servidor.';
+
+      if (status === 404) {
+        errorMsg = 'El usuario no existe en nuestro sistema.';
+      } else if (status === 401) {
+        errorMsg = 'Contraseña incorrecta o el usuario no pertenece a esta sede.';
+      } else if (status === 403) {
+        errorMsg = 'No tienes permisos para acceder a esta terminal.';
+      }
+
+      toast.error('Fallo de Autenticación', {
         description: errorMsg,
       });
 
-      setPassword('');
-      console.error("Fallo de acceso:", err);
+      setPassword(''); // Limpiamos clave por seguridad
     }
   };
 
@@ -174,26 +201,45 @@ export const LoginPage: React.FC = () => {
             </div>
           </div>
 
-          <div className="space-y-2">
-            <label className="text-[10px] font-black text-theme-sub ml-1 uppercase tracking-[0.2em]">Sede</label>
-            <div className="relative group">
-              <select
-                required
-                value={idFarmacia}
-                onChange={(e) => {
-                  const val = Number(e.target.value);
-                  setIdFarmacia(val);
-                  setNombreFarmacia(e.target.options[e.target.selectedIndex].text.toLowerCase());
-                }}
-                className="w-full px-6 py-4 bg-theme-main/50 border border-theme-border rounded-2xl outline-none focus:border-theme-accent/50 focus:ring-4 focus:ring-theme-accent/5 transition-all text-sm text-theme-text appearance-none cursor-pointer"
-              >
-                <option value={1}>Rubio</option>
-                <option value={2}>San Cristóbal</option>
-                <option value={3}>Maracaibo</option>
-              </select>
-              <Building2 size={16} className="absolute right-5 top-1/2 -translate-y-1/2 text-theme-sub pointer-events-none group-focus-within:text-theme-accent" />
-            </div>
-          </div>
+<div className="space-y-2">
+  <label className="text-[10px] font-black text-theme-sub ml-1 uppercase tracking-[0.2em] opacity-70 group-focus-within:opacity-100 transition-opacity">
+    Sede / Sucursal
+  </label>
+  <div className="relative group">
+    {/* Icono de fondo/decorativo */}
+    <div className="absolute left-4 top-1/2 -translate-y-1/2 transition-colors duration-300">
+        <Building2 
+          size={18} 
+          className="text-theme-sub/40 group-focus-within:text-theme-accent group-hover:text-theme-sub transition-colors" 
+        />
+    </div>
+
+    <select
+      required
+      value={idFarmacia}
+      onChange={(e) => {
+        const val = Number(e.target.value);
+        const text = e.target.options[e.target.selectedIndex].text;
+        setIdFarmacia(val);
+        setNombreFarmacia(text);
+      }}
+      className="w-full bg-theme-sidebar/50 border border-theme-border/50 text-theme-text text-[11px] font-bold rounded-2xl py-3.5 pl-12 pr-10 appearance-none cursor-pointer outline-none transition-all duration-300 hover:bg-theme-main hover:border-theme-accent/30 focus:border-theme-accent focus:ring-4 focus:ring-theme-accent/5 shadow-sm"
+    >
+      <option value="" disabled className="bg-theme-sidebar text-theme-sub">Selecciona una sede</option>
+      <option value={1} className="bg-theme-sidebar py-2">RUBIO</option>
+      <option value={2} className="bg-theme-sidebar py-2">AV10</option>
+      <option value={3} className="bg-theme-sidebar py-2">FUENTE</option>
+    </select>
+
+    {/* Indicador de flecha personalizado */}
+    <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-theme-sub/30 group-focus-within:text-theme-accent transition-transform duration-300 group-focus-within:rotate-180">
+      <ChevronDown size={14} strokeWidth={3} />
+    </div>
+
+    {/* Efecto de brillo inferior al hacer focus */}
+    <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-0 h-[2px] bg-theme-accent transition-all duration-500 group-focus-within:w-full rounded-full" />
+  </div>
+</div>
 
           <button
             type="submit"
@@ -204,7 +250,7 @@ export const LoginPage: React.FC = () => {
               <Loader2 size={20} className="animate-spin" />
             ) : (
               <div className="flex items-center gap-3">
-                <span className="text-[11px] font-black uppercase tracking-[0.2em]">Autenticar Terminal</span>
+                <span className="text-[11px] font-black uppercase tracking-[0.2em]">Ingresar</span>
                 <Activity size={14} className="opacity-40 group-hover:opacity-100" />
               </div>
             )}

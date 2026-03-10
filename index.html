@@ -6,20 +6,22 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>PharosApp</title>
     <script>
-  // Este script se ejecuta antes de que React cargue
-  (function() {
-    try {
-      const theme = localStorage.getItem('theme');
-      const supportDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches === true;
-      
-      if (theme === 'dark' || (!theme && supportDarkMode)) {
-        document.documentElement.classList.add('dark');
-        // Opcional: Establecer un color de fondo inmediato para el body
-        document.body.style.backgroundColor = '#0f172a'; 
-      }
-    } catch (e) {}
-  })();
-</script>
+      (function() {
+        try {
+          const theme = localStorage.getItem('theme');
+          const supportDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
+          
+          if (theme === 'dark' || (!theme && supportDarkMode)) {
+            document.documentElement.classList.add('dark');
+            // Aplicamos el color al documento directamente, no al body aún
+            document.documentElement.style.backgroundColor = '#020617'; 
+          } else {
+            document.documentElement.classList.remove('dark');
+            document.documentElement.style.backgroundColor = '#f8fafc';
+          }
+        } catch (e) {}
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>

@@ -3,10 +3,11 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { 
   LayoutDashboard, Monitor, Store, 
   History, CreditCard, LogOut, 
-  Droplets, Sun, Moon, Users, Landmark, Settings, ChevronDown 
+  Droplets, Sun, Moon, Users, Landmark, Settings, ChevronDown, MapPin 
 } from 'lucide-react';
 
 import logoMara from '../../assets/Isotipo2.png';
+import { authService } from '../../api/authService';
 
 interface SidebarProps {
   onClose?: () => void;
@@ -18,10 +19,41 @@ export const Sidebar: React.FC<SidebarProps> = ({ onClose, setActiveTab }) => {
   const navigate = useNavigate();
   const location = useLocation();
   
-  const [darkMode, setDarkMode] = useState(() => 
-    document.documentElement.classList.contains('dark')
-  );
+  // --- LÓGICA DE PERSISTENCIA DE TEMA CORREGIDA ---
+  const [darkMode, setDarkMode] = useState(() => {
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme) return savedTheme === 'dark';
+    return document.documentElement.classList.contains('dark');
+  });
+
   const [isConfigOpen, setIsConfigOpen] = useState(false);
+  const [user, setUser] = useState({ username: 'Usuario', sede: 'Sede Central' });
+
+  // Sincronizar cambios de tema con el DOM y LocalStorage
+  useEffect(() => {
+    if (darkMode) {
+      document.documentElement.classList.add('dark');
+      localStorage.setItem('theme', 'dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+      localStorage.setItem('theme', 'light');
+    }
+  }, [darkMode]);
+
+  useEffect(() => {
+    const sessionUser = localStorage.getItem('pharos_user');
+    if (sessionUser) {
+      try {
+        const parsed = JSON.parse(sessionUser);
+        setUser({
+          username: parsed.username || 'Usuario',
+          sede: parsed.sede || 'Sede Central'
+        });
+      } catch (e) {
+        console.error("Error al cargar datos de sidebar");
+      }
+    }
+  }, []);
 
   const menuItems = [
     { id: 'dashboard', icon: LayoutDashboard, label: 'Dashboard', path: '/dashboard' },
@@ -40,12 +72,18 @@ export const Sidebar: React.FC<SidebarProps> = ({ onClose, setActiveTab }) => {
     if (currentItem && setActiveTab) {
       setActiveTab(currentItem.id);
     }
-  }, [location.pathname]);
+  }, [location.pathname, setActiveTab]);
 
   const toggleTheme = () => {
-    const isDark = document.documentElement.classList.toggle('dark');
-    localStorage.setItem('theme', isDark ? 'dark' : 'light');
-    setDarkMode(isDark);
+    setDarkMode(!darkMode); // El useEffect se encarga del resto
+  };
+
+  const handleLogout = async () => {
+    try {
+      await authService.logout();
+    } catch (error) {
+      console.error("Error al cerrar sesión");
+    }
   };
 
   const handleNavigation = (id: string, path: string) => {
@@ -54,43 +92,28 @@ export const Sidebar: React.FC<SidebarProps> = ({ onClose, setActiveTab }) => {
     if (onClose) onClose(); 
   };
 
-return (
+  return (
     <aside className="w-64 h-screen bg-theme-sidebar border-r border-theme-border flex flex-col relative shadow-2xl overflow-hidden transition-colors duration-300">
       
-      {/* Luz ambiental */}
       <div className="absolute -top-24 -left-24 w-48 h-48 bg-theme-accent/10 blur-[100px] pointer-events-none hidden dark:block" />
 
-      {/* 🚀 Header / Logo y Título Alineados */}
+      {/* Header */}
       <div className="p-6 relative">
-        <div 
-          className="flex items-center gap-3 cursor-pointer group" 
-          onClick={() => handleNavigation('dashboard', '/dashboard')}
-        >
-          {/* Logo más pequeño para la alineación horizontal */}
+        <div className="flex items-center gap-3 cursor-pointer group" onClick={() => handleNavigation('dashboard', '/dashboard')}>
           <div className="relative">
-            <img 
-              src={logoMara} 
-              alt="Logo" 
-              className="w-10 h-10 object-contain dark:brightness-110 brightness-95 transition-transform duration-500 group-hover:scale-110" 
-            />
-            {/* Efecto de brillo detrás del logo */}
+            <img src={logoMara} alt="Logo" className="w-10 h-10 object-contain dark:brightness-110 brightness-95 transition-transform duration-500 group-hover:scale-110" />
             <div className="absolute inset-0 bg-theme-accent/20 blur-xl rounded-full opacity-0 group-hover:opacity-100 transition-opacity" />
           </div>
-
           <div className="flex flex-col justify-center">
             <h1 className="text-xl font-black tracking-tighter text-theme-text uppercase leading-none">
               Pharos<span className="text-blue-500 font-light italic">App</span>
             </h1>
-            <span className="text-[7px] font-bold text-theme-sub tracking-[0.3em] uppercase opacity-40 group-hover:opacity-100 transition-opacity">
-              Core System
-            </span>
+            <span className="text-[7px] font-bold text-theme-sub tracking-[0.3em] uppercase opacity-40">Core System</span>
           </div>
         </div>
       </div>
 
-      {/* Navegación Principal */}
       <nav className="flex-1 px-3 space-y-0.5 overflow-y-auto custom-scrollbar">
-        {/* ... resto del código del nav ... */}
         <p className="px-3 text-[9px] font-bold text-theme-sub uppercase tracking-[0.2em] mb-2 opacity-50">Menú Principal</p>
         
         {menuItems.map((item) => {
@@ -112,8 +135,30 @@ return (
           );
         })}
 
-        {/* Sección de Configuración */}
         <div className="pt-4 mt-4 border-t border-theme-border/50">
+          
+          <div className="mx-2 mb-4 p-3 rounded-2xl bg-gradient-to-br from-theme-card to-theme-main/20 border border-theme-border/50 shadow-sm relative overflow-hidden group">
+            <div className="absolute -right-2 -bottom-2 opacity-5 group-hover:opacity-10 transition-opacity">
+               <MapPin size={40} />
+            </div>
+
+            <div className="relative z-10 flex flex-col gap-2">
+              <div className="flex items-center gap-2">
+                <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                <span className="text-[10px] font-black text-theme-text uppercase tracking-tight truncate">
+                  {user.username}
+                </span>
+              </div>
+
+              <div className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-theme-accent/10 border border-theme-accent/20 w-fit">
+                <MapPin size={10} className="text-theme-accent" />
+                <span className="text-[8px] font-black text-theme-accent uppercase tracking-[0.1em]">
+                  {user.sede}
+                </span>
+              </div>
+            </div>
+          </div>
+
           <button
             onClick={() => setIsConfigOpen(!isConfigOpen)}
             className={`
@@ -130,7 +175,7 @@ return (
 
           <div className={`
             overflow-hidden transition-all duration-300 ease-in-out px-2
-            ${isConfigOpen ? 'max-h-32 opacity-100 mt-1' : 'max-h-0 opacity-0'}
+            ${isConfigOpen ? 'max-h-40 opacity-100 mt-1' : 'max-h-0 opacity-0'}
           `}>
             <button
               onClick={toggleTheme}
@@ -141,7 +186,7 @@ return (
             </button>
 
             <button
-              onClick={() => navigate('/login')}
+              onClick={handleLogout}
               className="w-full flex items-center gap-3 px-4 py-2 rounded-lg text-red-500/70 hover:bg-red-500/10 hover:text-red-500 transition-all"
             >
               <LogOut size={13} />
@@ -151,7 +196,6 @@ return (
         </div>
       </nav>
 
-      {/* Footer Version */}
       <div className="p-4 flex flex-col items-center">
         <p className="text-[7px] font-bold text-theme-sub opacity-20 tracking-[0.4em] uppercase">
           v1.0.4-stable

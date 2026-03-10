@@ -2,6 +2,7 @@ import api from './instanciaApi';
 
 interface LoginResponse {
   message?: string;
+  cause?: string;
   user?: {
     id: number;
     username: string;
@@ -11,9 +12,9 @@ interface LoginResponse {
 
 export const authService = {
   login: async (
-    username: string, 
-    password: string, 
-    id_farmacia: number | string, 
+    username: string,
+    password: string,
+    id_farmacia: number | string,
     farmacia: string
   ): Promise<LoginResponse> => {
     try {
@@ -26,46 +27,83 @@ export const authService = {
         }
       };
 
-      // 1. Petición al backend. 
-      // Al estar en el mismo dominio, 'withCredentials' en la instanciaApi
-      // hará que el navegador guarde las cookies automáticamente.
       const response = await api.post<LoginResponse>('/auth/login', loginPayload);
 
-      // 2. VALIDACIÓN BASADA EN RESPUESTA DEL SERVIDOR
-      // Si el status es 200, el servidor confirmó que el usuario EXISTE.
+      const data = response.data;
+      const invalidMessages = ["no existe", "invalida", "incorrecto"];
+      const hasErrorMessage = data.message && invalidMessages.some(m => data.message?.toLowerCase().includes(m));
+
+      // --- FILTRO DE SEGURIDAD PHAROS ---
       if (response.status === 200) {
-        
-        // Marcamos la sesión como activa en el front
-        localStorage.setItem('pharos_session_active', 'true');
-        
-        if (response.data.user) {
-          localStorage.setItem('pharos_user', JSON.stringify(response.data.user));
+        if (hasErrorMessage || !data.user) {
+          throw {
+            isManualError: true,
+            message: data.message || "Acceso Denegado: Credenciales no reconocidas en el sistema.",
+            cause: data.cause || "El usuario no existe o no tiene permisos en esta sede."
+          };
         }
 
-        return response.data;
+        // SESIÓN VÁLIDA
+        localStorage.setItem('pharos_session_active', 'true');
+        localStorage.setItem('pharos_user', JSON.stringify(data.user));
+
+        return data;
       } else {
-        throw new Error('No se pudo validar la sesión.');
+        // Mensaje más técnico para estados inesperados
+        throw new Error(`Respuesta anómala del servidor (Código: ${response.status}). No se pudo establecer la sesión.`);
       }
 
     } catch (error: any) {
-      // Si el usuario no existe o la clave es errónea, el servidor (Express)
-      // debe devolver un error (401/404) que caerá aquí.
       localStorage.removeItem('pharos_session_active');
       localStorage.removeItem('pharos_user');
 
-      const errorMsg = error.response?.data?.message || 'Usuario o clave incorrectos';
-      throw new Error(errorMsg); 
+      // 1. Manejo de error manual (el filtro de arriba)
+      if (error.isManualError) {
+        throw new Error(error.message);
+      }
+
+      // 2. Manejo de errores de red (Servidor Bun apagado o sin internet)
+      if (error.code === 'ERR_NETWORK') {
+        throw new Error('Fallo de Red: El servidor de PharosApp no responde. Verifica tu conexión o el estado del host.');
+      }
+
+      // 3. Manejo de errores HTTP específicos (401, 500, etc.)
+      if (error.response) {
+        const status = error.response.status;
+        const serverMsg = error.response.data?.message;
+
+        switch (status) {
+          case 401:
+            throw new Error(serverMsg || 'No autorizado: Usuario, clave o sede incorrectos.');
+          case 404:
+            throw new Error('Servicio no disponible: El endpoint de autenticación no fue localizado en el servidor.');
+          case 500:
+            throw new Error('Error Crítico: Fallo en el motor de base de datos (PostgreSQL/Prisma). Contacta a soporte.');
+          default:
+            throw new Error(serverMsg || `Error de Sistema (${status}): Intente nuevamente en unos minutos.`);
+        }
+      }
+
+      // 4. Error genérico final
+      throw new Error(error.message || 'Error crítico en el protocolo de autenticación.');
     }
   },
 
   logout: async () => {
     try {
-      // Es vital llamar al backend para que limpie las cookies del lado del servidor
+      // Intentamos invalidar la sesión en el servidor (cookies/JWT)
       await api.post('/auth/logout');
     } catch (err) {
-      console.error("Error al invalidar cookies");
+      console.error("Error al invalidar cookies en el servidor:", err);
     } finally {
-      localStorage.clear();
+      // --- CORRECCIÓN CRUCIAL ---
+      // En lugar de localStorage.clear(), borramos solo lo relacionado a la sesión
+      localStorage.removeItem('pharos_session_active');
+      localStorage.removeItem('pharos_user');
+
+      // El 'theme' se queda intacto en el navegador.
+
+      // Redirigimos al login
       window.location.href = '/login';
     }
   }
