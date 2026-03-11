@@ -9,17 +9,24 @@
   --color-theme-accent: var(--accent);
   --color-theme-card: var(--bg-card);
 }
-
 :root {
-  --bg-main: #f8fafc;
-  --bg-sidebar: #ffffff;
+  /* Fondo general: un degradado oscuro en el componente lo hará resaltar */
+  --bg-main: #f1f5f9;       
+  
+  /* Tarjeta: Blanca pura con glassmorphism suave */
+  --bg-sidebar: rgba(255, 255, 255, 0.95); 
   --bg-card: #ffffff;
-  --text-primary: #0f172a;
-  --text-secondary: #64748b;
-  --border-color: #e2e8f0;
-  --accent: #2563eb;
-}
 
+  /* Texto: Slate 900 para que "salte" a la vista */
+  --text-primary: #0f172a;  
+  --text-secondary: #475569; 
+
+  /* Borde: Muy sutil para no ensuciar el diseño */
+  --border-color: rgba(0, 0, 0, 0.08);  
+  
+  /* Tu teal característico */
+  --accent: #00B8A0;        
+}
 .dark {
   --bg-main: #020617;
   --bg-sidebar: #0b1120; 
@@ -61,13 +68,12 @@
 
 [data-sonner-toast] {
   padding: 14px 18px !important;
-  /* Fondo dinámico según el tema */
   background-color: var(--bg-sidebar) !important;
   color: var(--text-primary) !important;
   border: 1px solid var(--border-color) !important;
   border-radius: 20px !important;
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1) !important;
-  backdrop-filter: blur(8px);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.05) !important;
+  backdrop-filter: blur(12px); /* Aumentado el blur para el modo claro */
 }
 
 /* Estilo del título del Toast */
@@ -86,22 +92,11 @@
   font-weight: 600 !important;
 }
 
-/* Ajuste para iconos de éxito (Verde esmeralda) */
-[data-sonner-toast][data-type="success"] [data-icon] {
-  color: #10b981 !important;
-}
+/* Colores de estado para iconos */
+[data-sonner-toast][data-type="success"] [data-icon] { color: #10b981 !important; }
+[data-sonner-toast][data-type="error"] [data-icon] { color: #ef4444 !important; }
+[data-sonner-toast][data-type="loading"] [data-icon] { color: var(--accent) !important; }
 
-/* Ajuste para iconos de error (Rojo intenso) */
-[data-sonner-toast][data-type="error"] [data-icon] {
-  color: #ef4444 !important;
-}
-
-/* Ajuste para iconos de carga/loading */
-[data-sonner-toast][data-type="loading"] [data-icon] {
-  color: var(--accent) !important;
-}
-
-/* Espaciado cuando hay varias alertas */
 [data-sonner-toaster][data-expanded="true"] {
   gap: 8px !important;
 }

@@ -2,7 +2,7 @@ import axios from 'axios';
 
 const api = axios.create({
   // Al desplegar en la misma máquina, 'localhost' asegura que el origen sea el mismo
-  baseURL: 'http://localhost:8000', 
+  baseURL: 'http://192.168.3.59:8000', 
   withCredentials: true, // INDISPENSABLE: Hace que el navegador adjunte las cookies at/rt solas
   headers: {
     'Content-Type': 'application/json',

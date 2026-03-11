@@ -8,6 +8,7 @@ import {
 import { mockEquipos } from '../mocks/inventarioMock';
 import type { Equipo } from '../types';
 
+
 // Sub-componente de tarjeta de equipo optimizado V4 con Indicador de Estado mejorado
 const EquipmentCard = ({ label, serial, icon: Icon, active }: any) => (
   <div className={`
