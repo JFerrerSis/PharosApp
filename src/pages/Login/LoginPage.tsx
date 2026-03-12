@@ -3,15 +3,27 @@ import { useNavigate } from 'react-router-dom';
 import { User, Eye, EyeOff, Loader2, Activity, CheckCircle2, Building2, ChevronDown } from 'lucide-react';
 import { toast } from 'sonner';
 
-import { authService } from '../../api/authService';
+import { authService } from '../../api/service/auth.service';
+import { farmaciaService } from '../../api/service/farmacia.service'; 
 import fondoImg from '../../assets/fondo.jpg';
 import logoMara from '../../assets/Logo-maraplus.png';
+
+// Interfaz actualizada para coincidir con tu JSON del backend
+interface Farmacia {
+  id: number;
+  some_code: string;
+  name_farmcia: string;
+}
 
 export const LoginPage: React.FC = () => {
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isErrorShake, setIsErrorShake] = useState(false);
+
+  // --- ESTADOS PARA SEDES DINÁMICAS ---
+  const [farmacias, setFarmacias] = useState<Farmacia[]>([]);
+  const [isLoadingFarmacias, setIsLoadingFarmacias] = useState(true);
 
   const [isDark, setIsDark] = useState(() => {
     const savedTheme = localStorage.getItem('theme');
@@ -27,6 +39,15 @@ export const LoginPage: React.FC = () => {
 
   const isFormInvalid = !username.trim() || !password || idFarmacia === '';
 
+useEffect(() => {
+  const cargarSedes = async () => {
+    setIsLoadingFarmacias(true);
+    const data = await farmaciaService.getFarmacias();
+    setFarmacias(data); // Ya viene como array limpio desde el service
+    setIsLoadingFarmacias(false);
+  };
+  cargarSedes();
+}, []);
   useEffect(() => {
     if (isDark) {
       document.documentElement.classList.add('dark');
@@ -54,7 +75,6 @@ export const LoginPage: React.FC = () => {
     try {
       const sanitizedUsername = username.trim().toLowerCase();
       
-      // Intentamos el login - El service ahora devuelve el objeto completo
       const response = await authService.login(
         sanitizedUsername, 
         password, 
@@ -62,7 +82,6 @@ export const LoginPage: React.FC = () => {
         nombreFarmacia
       );
 
-      // --- MANEJO DE ÉXITO (Traído del Servidor) ---
       setWelcomeMessage(`¡Bienvenido, ${username.trim()}!`);
 
       toast.success(response.message || 'Acceso Autorizado', {
@@ -76,12 +95,10 @@ export const LoginPage: React.FC = () => {
       }, 2500);
 
     } catch (err: any) {
-      // --- MANEJO DE ERROR (Traído del Servidor) ---
       setIsLoading(false);
       setIsErrorShake(true);
       setTimeout(() => setIsErrorShake(false), 500);
 
-      // 'err' ahora es el objeto { message, cause } que lanzamos en el authService
       const errorTitle = err.message || 'Error de Autenticación';
       const errorDescription = err.cause || 'No se pudo conectar con el servidor.';
 
@@ -90,7 +107,6 @@ export const LoginPage: React.FC = () => {
         duration: 5000,
       });
 
-      // Limpiamos clave por seguridad si el error viene del backend
       setPassword('');
     }
   };
@@ -153,6 +169,7 @@ export const LoginPage: React.FC = () => {
         <form onSubmit={handleSubmit} className="space-y-4" autoComplete="off">
           <input type="password" style={{ display: 'none' }} tabIndex={-1} autoComplete="new-password" />
 
+          {/* Input Usuario */}
           <div className="space-y-1.5 group">
             <label className="text-[9px] font-black text-theme-sub ml-1 uppercase tracking-widest">Usuario</label>
             <div className="relative">
@@ -168,6 +185,7 @@ export const LoginPage: React.FC = () => {
             </div>
           </div>
 
+          {/* Input Clave */}
           <div className="space-y-1.5 group">
             <label className="text-[9px] font-black text-theme-sub ml-1 uppercase tracking-widest">Clave</label>
             <div className="relative">
@@ -189,37 +207,47 @@ export const LoginPage: React.FC = () => {
             </div>
           </div>
 
+          {/* SELECT DE SEDES DINÁMICO AJUSTADO */}
           <div className="space-y-1.5">
             <label className="text-[9px] font-black text-theme-sub ml-1 uppercase tracking-widest">Sede</label>
             <div className="relative">
               <select
                 required
                 value={idFarmacia}
+                disabled={isLoadingFarmacias}
                 onChange={(e) => {
                   const val = e.target.value === "" ? "" : Number(e.target.value);
                   const text = e.target.options[e.target.selectedIndex].text;
                   setIdFarmacia(val);
                   setNombreFarmacia(text);
                 }}
-                className="w-full bg-theme-sidebar/50 border border-theme-border/50 text-theme-text text-[10px] font-bold rounded-xl py-3 pl-10 pr-10 appearance-none cursor-pointer outline-none transition-all hover:bg-theme-main hover:border-theme-accent/30 focus:border-theme-accent"
+                className={`w-full bg-theme-sidebar/50 border border-theme-border/50 text-theme-text text-[10px] font-bold rounded-xl py-3 pl-10 pr-10 appearance-none outline-none transition-all ${
+                  isLoadingFarmacias ? 'cursor-wait opacity-50' : 'cursor-pointer hover:bg-theme-main hover:border-theme-accent/30 focus:border-theme-accent'
+                }`}
               >
-                <option value="" disabled>SELECCIONAR...</option>
-                <option value={1}>RUBIO</option>
-                <option value={2}>AV10</option>
-                <option value={3}>FUENTE</option>
-                <option value={4}>CUMBRES</option>
-                <option value={5}>BELLA VISTA</option>
+                <option value="" disabled>
+                  {isLoadingFarmacias ? 'SINCRONIZANDO...' : 'SELECCIONAR SEDE...'}
+                </option>
+                {farmacias.map((f) => (
+                  <option key={f.id} value={f.id} className="bg-slate-900 text-white">
+                    {f.some_code} - {f.name_farmcia.toUpperCase()}
+                  </option>
+                ))}
               </select>
               <Building2 size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-theme-sub/40" />
-              <ChevronDown size={12} className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-theme-sub/30" />
+              {isLoadingFarmacias ? (
+                <Loader2 size={12} className="absolute right-4 top-1/2 -translate-y-1/2 animate-spin text-theme-accent" />
+              ) : (
+                <ChevronDown size={12} className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-theme-sub/30" />
+              )}
             </div>
           </div>
 
           <button
             type="submit"
-            disabled={isLoading || isFormInvalid}
+            disabled={isLoading || isFormInvalid || isLoadingFarmacias}
             className={`w-full h-12 font-black rounded-xl flex items-center justify-center transition-all duration-300 mt-6 active:scale-[0.97] 
-              ${(isLoading || isFormInvalid)
+              ${(isLoading || isFormInvalid || isLoadingFarmacias)
                 ? 'bg-theme-border/30 text-theme-sub cursor-not-allowed opacity-50'
                 : 'bg-theme-text text-theme-main hover:bg-theme-accent hover:text-white shadow-lg'
               }`}
@@ -237,7 +265,7 @@ export const LoginPage: React.FC = () => {
 
         <footer className="mt-8 text-center border-t border-theme-border/50 pt-4">
           <p className="text-[8px] font-black text-theme-sub uppercase tracking-[0.4em] opacity-40">
-            Jferrer &copy; 2026
+            Powered By jferrer & Midnight Studio &copy; 2026
           </p>
         </footer>
       </div>

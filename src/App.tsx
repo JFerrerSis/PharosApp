@@ -10,16 +10,17 @@ import { TonerPage } from './pages/toners/TonerPage';
 import { NotFoundPage } from './pages/NotFound';
 import { HistorialPage } from './pages/historial/HistorialPage';
 import { UsersAttendancePage } from './pages/asistencia/UsersAttendancePage';
-// --- NUEVA IMPORTACIÓN DE SONNER ---
 import { Toaster } from 'sonner';
 
-// --- IMPORTACIONES DE ADMINISTRACIÓN ---
+// --- ADMINISTRACIÓN ---
 import { UserPage } from './pages/usuarios/UserPage';
 import { FarmaciaPage } from './pages/farmacias/FarmaciaPage';
 import { BancoPage } from './pages/bancos/BancoPage';
 
-// --- IMPORTACIÓN DEL GUARDIÁN DE RUTAS ---
+// --- SEGURIDAD ---
 import { ProtectedRoute } from './components/auth/ProtectedRoute';
+// 1. Importamos la función de activación de interceptores
+
 
 function App() {
   const [theme, setTheme] = useState(() => {
@@ -45,79 +46,22 @@ function App() {
       />
 
       <Routes>
-        {/* RUTA PÚBLICA */}
         <Route path="/login" element={<LoginPage />} />
 
         {/* --- GRUPO DE RUTAS PROTEGIDAS --- */}
         <Route element={<ProtectedRoute />}>
-          
-          {/* Panel de Control */}
-          <Route path="/dashboard" element={
-            <MainLayout titulo="Panel de Control">
-              <Dashboard />
-            </MainLayout>
-          } />
-
-          {/* Gestión de Asistencia (NUEVA RUTA) */}
-          <Route path="/asistencia" element={
-            <MainLayout titulo="Control de Asistencia Personal">
-              <UsersAttendancePage />
-            </MainLayout>
-          } />
-
-          {/* Inventario y Operaciones */}
-          <Route path="/equipos" element={
-            <MainLayout titulo="Gestión de Equipos">
-              <EquiposPage />
-            </MainLayout>
-          } />
-
-          <Route path="/cajas" element={
-            <MainLayout titulo="Gestión de Cajas">
-              <CajasPage />
-            </MainLayout>
-          } />
-
-          <Route path="/puntos-venta" element={
-            <MainLayout titulo="Gestión de Puntos de venta">
-              <PuntosVentaPage />
-            </MainLayout>
-          } />
-
-          <Route path="/toners" element={
-            <MainLayout titulo="Gestión de Tóners">
-              <TonerPage />
-            </MainLayout>
-          } />
-
-          <Route path="/usuarios" element={
-            <MainLayout titulo="Gestión de Usuarios">
-              <UserPage />
-            </MainLayout>
-          } />
-
-          <Route path="/farmacias" element={
-            <MainLayout titulo="Gestión de Farmacias">
-              <FarmaciaPage />
-            </MainLayout>
-          } />
-
-          <Route path="/bancos" element={
-            <MainLayout titulo="Gestión de Entidades Bancarias">
-              <BancoPage />
-            </MainLayout>
-          } />
-
-          <Route path="/historial" element={
-            <MainLayout titulo="Historial de movimientos">
-              <HistorialPage />
-            </MainLayout>
-          } />
-
+          <Route path="/dashboard" element={<MainLayout titulo="Panel de Control"><Dashboard /></MainLayout>} />
+          <Route path="/asistencia" element={<MainLayout titulo="Control de Asistencia"><UsersAttendancePage /></MainLayout>} />
+          <Route path="/equipos" element={<MainLayout titulo="Gestión de Equipos"><EquiposPage /></MainLayout>} />
+          <Route path="/cajas" element={<MainLayout titulo="Gestión de Cajas"><CajasPage /></MainLayout>} />
+          <Route path="/puntos-venta" element={<MainLayout titulo="Gestión de Puntos"><PuntosVentaPage /></MainLayout>} />
+          <Route path="/toners" element={<MainLayout titulo="Gestión de Tóners"><TonerPage /></MainLayout>} />
+          <Route path="/usuarios" element={<MainLayout titulo="Gestión de Usuarios"><UserPage /></MainLayout>} />
+          <Route path="/farmacias" element={<MainLayout titulo="Gestión de Farmacias"><FarmaciaPage /></MainLayout>} />
+          <Route path="/bancos" element={<MainLayout titulo="Gestión de Bancos"><BancoPage /></MainLayout>} />
+          <Route path="/historial" element={<MainLayout titulo="Historial"><HistorialPage /></MainLayout>} />
         </Route> 
-        {/* --- FIN DEL GRUPO PROTEGIDO --- */}
 
-        {/* Redirecciones y Errores */}
         <Route path="/" element={<Navigate to="/login" replace />} />
         <Route path="*" element={<NotFoundPage />} />
       </Routes>

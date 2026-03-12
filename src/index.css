@@ -10,22 +10,24 @@
   --color-theme-card: var(--bg-card);
 }
 :root {
-  /* Fondo general: un degradado oscuro en el componente lo hará resaltar */
-  --bg-main: #f1f5f9;       
+  /* Fondo general: Un Slate un poco más saturado para que el blanco de las cards resalte */
+  --bg-main: #f8fafc;       
   
-  /* Tarjeta: Blanca pura con glassmorphism suave */
-  --bg-sidebar: rgba(255, 255, 255, 0.95); 
+  /* Tarjeta: Blanca pura con un borde sutil pero definido */
+  --bg-sidebar: rgba(255, 255, 255, 0.9); 
   --bg-card: #ffffff;
 
-  /* Texto: Slate 900 para que "salte" a la vista */
-  --text-primary: #0f172a;  
-  --text-secondary: #475569; 
-
-  /* Borde: Muy sutil para no ensuciar el diseño */
-  --border-color: rgba(0, 0, 0, 0.08);  
+  /* Texto Primario: Slate 950 (Casi negro) */
+  --text-primary: #020617;  
   
-  /* Tu teal característico */
-  --accent: #00B8A0;        
+  /* AJUSTE CLAVE: Texto Secundario más oscuro (Slate 600/700) para legibilidad */
+  --text-secondary: #334155; 
+
+  /* Borde: Un toque más de opacidad para definir estructuras */
+  --border-color: rgba(15, 23, 42, 0.12);  
+  
+  /* Teal característico */
+  --accent: #008f7a;        
 }
 .dark {
   --bg-main: #020617;
@@ -34,7 +36,7 @@
   --text-primary: #f8fafc;
   --text-secondary: #94a3b8;
   --border-color: #1e293b;
-  --accent: #00B8A0;
+  --accent: #008f7a;
 }
 
 @layer base {

@@ -7,7 +7,7 @@ import {
 } from 'lucide-react';
 
 import type { Usuario, Farmacia, CreateUserDTO } from '../../types/usuarios';
-import { authService } from '../../api/authService';
+import { authService } from '../../api/service/auth.service';
 
 export const UserPage: React.FC = () => {
   const [usuarios, setUsuarios] = useState<Usuario[]>([]);
